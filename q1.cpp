@@ -4,13 +4,17 @@
 #include <time.h>
 
 //variáveis globais
+//Ao trocar os caminhos lembrar de colocar duas barras (\\) 
+
 int tamanhoDaSequencia = 0, numeroAuxiliar = 0;
-char dna[256], cromossomo1[256], cromossomo2[256], base = 'A';
-char url[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\dna.txt", 
+char *dna, *cromossomo1, *cromossomo2, *descendencia1, *descendencia2;
+char digitos[2], base = 'A',
+url[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\dna.txt", 
 urlSaida[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\dna_saida.txt",
 urlCromossomo1[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\cromossomo1.txt",
 urlCromossomo2[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\cromossomo2.txt",
-urlCromossomoSaida[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\cromossomo_saida.txt",digitos[2];
+urlCromossomoSaida[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\cromossomo_saida.txt",
+urlCromossomoSaida2[] = "C:\\Users\\Ygor Reis\\Documents\\trabalhoAuriLinda\\cromossomo_saida__2.txt";
 
 //declaração de métodos
 void lerArquivo(char *url, char *digitos, int opcaoImpressao);
@@ -18,10 +22,13 @@ void obterTamanhoSequencia(char *digitos);
 void criarCadeiaCorrespondente(char *dna);
 void salvarArquivo(char *url, char *dna);
 void gerarMutacao(char *dna, char baseDesejada);
+void obterCromossomo(char *url, char *cromossomo);
+void imprimirResultados(int opcao);
+void copiarVetor(char *vetorDestino, char *vetorOrigem);
 void zerarNumeroAuxiliar();
 void criarNumeroRandomico();
-void imprimirResultados(int opcao);
 void gerarCruzamento();
+void gerarCromossomosDescendecias();
 
 int main(){
 		
@@ -44,13 +51,26 @@ void lerArquivo(char *url, char *digitos, int opcaoImpressao){
 				obterTamanhoSequencia(digitos);
 				numeroAuxiliar++;
 			}else{
-				strncpy(dna, digitos, tamanhoDaSequencia);
+				dna = (char *) malloc(tamanhoDaSequencia * sizeof(char));
+				copiarVetor(dna,digitos);
 				numeroAuxiliar = 0;
 			}
 		}
 	}
 	fclose(arq);
 	imprimirResultados(opcaoImpressao);
+}
+
+void copiarVetor(char *vetorDestino, char *vetorOrigem){
+	
+	zerarNumeroAuxiliar();
+	while (vetorOrigem[numeroAuxiliar] != '\0') {
+		vetorDestino[numeroAuxiliar] = vetorOrigem[numeroAuxiliar];
+		numeroAuxiliar++;
+	}
+	vetorDestino[numeroAuxiliar] = '\0';
+	zerarNumeroAuxiliar();
+	
 }
 
 void obterTamanhoSequencia(char *digitos){
@@ -83,7 +103,6 @@ void salvarArquivo(char *urlSaida, char *dna){
 	}else{
 		fprintf(arq,dna);
 		printf("\n");
-		printf("DNA CORRESPONDENTE SALVO COM SUCESSO\n");
 		printf("CONSULTAR ENDERECO: %s", urlSaida);
 		printf("\n");
 	}
@@ -100,17 +119,16 @@ void imprimirResultados(int opcao){
 		printf("DNA COM MUTACAO    - %s\n", dna);
 	}else{
 		printf("\n");
-		printf("DNA CRUZADO        - %s\n", dna);
+		printf("CROMOSSOMO         - %s\n", dna);
 	}
 }
 
 void criarNumeroRandomico(){
 	
-	//printf("Numero auxiliar era: %d\n", numeroAuxiliar);
 	srand(time(NULL));
 	numeroAuxiliar = rand() % tamanhoDaSequencia;
 	printf("\n");
-	printf("POSICAO DA BASE TROCADA: %d\n", numeroAuxiliar + 1);
+	printf("POSICAO: %d\n", numeroAuxiliar + 1);
 }
 
 void gerarMutacao(char *dna, char baseDesejada){
@@ -137,36 +155,41 @@ void zerarNumeroAuxiliar(){
 }
 
 void gerarCruzamento(){
-	zerarNumeroAuxiliar();
-	lerArquivo(urlCromossomo1,digitos,3);
-	strncpy(cromossomo1, dna, tamanhoDaSequencia);
 	
-	zerarNumeroAuxiliar();
-	lerArquivo(urlCromossomo2,digitos,3);
-	strncpy(cromossomo2, dna, tamanhoDaSequencia);
-
-	criarNumeroRandomico();
+	gerarCromossomosDescendecias();
+	obterCromossomo(urlCromossomo1, cromossomo1);
+	obterCromossomo(urlCromossomo2, cromossomo2);
 	
-	char* descendencia1 = (char *) malloc((tamanhoDaSequencia + 1) * sizeof(char));
-	char* descendencia2 = (char *) malloc((tamanhoDaSequencia + 1) * sizeof(char));
+	criarNumeroRandomico();	
 	int auxiliar = 0;
 	
 	//copiando os primeiros numeros antes do ponto de cruzamento
 	//numeroAuxiliar == ponto do cruzamento
 	for(auxiliar; auxiliar < tamanhoDaSequencia; auxiliar++){
 		if(auxiliar < numeroAuxiliar){
-			strncpy(descendencia1,cromossomo1,auxiliar);
-			strncpy(descendencia2,cromossomo2,auxiliar);
-			//printf("DESCENDENCIA %d - %s \n", auxiliar, descendencia1);
-			//printf("DESCENDENCIA %d - %s \n", auxiliar, descendencia2);
+			descendencia1[auxiliar] = cromossomo1[auxiliar];
+			descendencia2[auxiliar] = cromossomo2[auxiliar];
 		}else{
-			strncpy(descendencia1,cromossomo2,auxiliar);
-			strncpy(descendencia2,cromossomo1,auxiliar);
-			//printf("DESCENDENCIA %d - %s \n", auxiliar, descendencia1);
-			//printf("DESCENDENCIA %d - %s \n", auxiliar, descendencia2);
-		}		
+			descendencia1[auxiliar] = cromossomo2[auxiliar];
+			descendencia2[auxiliar] = cromossomo1[auxiliar];
+		}
 	}	
-	
 	printf("DESCENDENCIA 01 - %s \n", descendencia1);
 	printf("DESCENDENCIA 02 - %s \n", descendencia2);
+	
+	salvarArquivo(urlCromossomoSaida, descendencia1);
+	salvarArquivo(urlCromossomoSaida2, descendencia2);
+}
+
+void obterCromossomo(char *url, char *cromossomo){
+	zerarNumeroAuxiliar();
+	lerArquivo(url,digitos,3);
+	copiarVetor(cromossomo,dna);
+}
+
+void gerarCromossomosDescendecias(){
+	cromossomo1 = (char *) malloc(tamanhoDaSequencia * sizeof(char));
+	cromossomo2 = (char *) malloc(tamanhoDaSequencia * sizeof(char));
+	descendencia1 = (char *) malloc(tamanhoDaSequencia * sizeof(char));
+	descendencia2 = (char *) malloc(tamanhoDaSequencia * sizeof(char));
 }
